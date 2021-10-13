@@ -2,7 +2,7 @@
 
 [![Logo](https://github.com/Invertebr4do/WiBreak/blob/main/WiBreak.png?raw=true "Logo")](https://github.com/Invertebr4do/MM-WN722N/blob/main/img_header.png?raw=true "Logo")
 
-Herramienta para automatizar los ataques para optención de hanshake, PKMID attack y para causar caos en la red, incluso logrando causar un DOS **(USAR CON PRECAUCIÓN)**
+Herramienta para automatizar los ataques para optención de hanshake, PKMID attack y causar caos en la red, incluso logrando causar un DOS **(USAR CON PRECAUCIÓN)**
 
 ## Testeado en los siguientes OS:
 - Kali linux 2021.2
