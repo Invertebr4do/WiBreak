@@ -112,7 +112,7 @@ function handshake(){
 	aireplay=$!
 	sleep 10; kill -9 $aireplay; wait $aireplay 2>/dev/null
 
-	sleep 20; kill -9 $airodumpF
+	sleep 15; kill -9 $airodumpF
 	wait $airodumpF 2>/dev/null
 
 	echo -e "\n${green}[+]${end}${gray} Cracking ${green}$e${end} ${gray}password...${end}\n"; sleep 0.5
