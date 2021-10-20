@@ -1,4 +1,6 @@
-# WiBreak
+# WiBreak 
+
+# (ESTA HERRAMIENTA SE ENCUENTRA EN MEJORAS, PROXIMAMENTE NUEVOS MODOS DE ATAQUE, ENTRE OTRAS COSAS)
 
 [![Logo](https://github.com/Invertebr4do/WiBreak/blob/main/WiBreak.png?raw=true "Logo")](https://github.com/Invertebr4do/MM-WN722N/blob/main/img_header.png?raw=true "Logo")
 
